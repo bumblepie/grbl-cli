@@ -1,7 +1,7 @@
-extern crate grbl_cli;
+extern crate grbl;
 extern crate serial;
 
-use grbl_cli::GrblPort;
+use grbl::GrblPort;
 use std::time::Duration;
 use serial::prelude::*;
 

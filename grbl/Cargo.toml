@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["bumblepie <luke@bumblepie.space>"]
 
 [dependencies]
+serial = "0.4.0"
