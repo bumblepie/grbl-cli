@@ -12,6 +12,9 @@ pub struct GrblConfig {
     port: String,
 }
 
+const CMD_SUCCEEDED_PROMPT: &'static str = ">>";
+const CMD_FAILED_PROMPT: &'static str = "!>>";
+
 impl GrblConfig {
     pub fn new(args: &[String]) -> GrblConfig {
         let port = args[1].clone();
@@ -47,9 +50,16 @@ pub fn run(config: GrblConfig) -> Result<(), serial::Error> {
     let line = port.read_line().expect("oh no");
     println!("{}", line);
     
+    let mut previous_command_succeeded = true;
+
     loop {
         //Add prompt to separate cmds from output
-        print!(">>");
+        if previous_command_succeeded {
+            print!("{}", CMD_SUCCEEDED_PROMPT);
+        } else {
+            print!("{}", CMD_FAILED_PROMPT);
+        }
+        
         io::stdout().flush().expect("oh no");
         let mut input = String::new();
         io::stdin().read_line(&mut input).expect("oh no");
@@ -60,8 +70,9 @@ pub fn run(config: GrblConfig) -> Result<(), serial::Error> {
         }
 
         port.send_command(&input).expect("oh no");
-        let lines = port.read_until_ok(2).expect("oh no");
-        for line in lines.iter() {
+        let result = port.read_until_ok(2).expect("oh no");
+        previous_command_succeeded = result.succeeded;
+        for line in result.output.iter() {
             println!("{}", line);
         }
     }

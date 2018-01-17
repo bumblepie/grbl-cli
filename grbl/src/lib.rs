@@ -9,6 +9,10 @@ pub struct GrblPort<P: SerialPort> {
 	output_buffer: VecDeque<u8>,
 }
 
+pub struct GrblResult {
+    pub output: Vec<String>,
+    pub succeeded: bool,
+}
 
 impl<P: SerialPort> GrblPort<P> {
     pub fn new(port: P) -> Self {
@@ -69,18 +73,25 @@ impl<P: SerialPort> GrblPort<P> {
     	// Err(serial::Error::new(serial::ErrorKind::InvalidInput,"Not yet implemented"))
     }
 
-    pub fn read_until_ok(&mut self, max_oks: u8) -> Result<Vec<String>, serial::Error> {
-    	let mut result = Vec::new();
+    pub fn read_until_ok(&mut self, max_oks: u8) -> Result<GrblResult, serial::Error> {
+    	let mut output = Vec::new();
     	let mut num_oks = 0;
+        let mut succeeded = true;
 
     	while num_oks < max_oks {
-    		let line = self.read_line()?;     
-    		if line == "ok" {
+    		let line = self.read_line()?; 
+    		if line == "ok" || line.starts_with("error") {
     			num_oks += 1;
     		}
-            result.push(line);
+            if line.starts_with("error") {
+                succeeded = false;
+            }
+            output.push(line);
     	}
-    	Ok(result)
+    	Ok(GrblResult {
+            output,
+            succeeded
+        })
     }
 }
 #[cfg(test)]
