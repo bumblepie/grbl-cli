@@ -35,6 +35,9 @@ pub fn run(config: GrblConfig) -> Result<(), serial::Error> {
     port.set_timeout(Duration::from_millis(5000))
         .expect("setting timeout failed");
 
+    println!("Enter GRBL commands to execute them and view GRBL's output");
+    println!("Enter \"exit\" to exit the program");
+
     let mut port = GrblPort::new(port);
     port.wakeup().expect("oh no");
 
