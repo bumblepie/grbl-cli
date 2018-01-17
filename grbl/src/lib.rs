@@ -45,7 +45,6 @@ impl<P: SerialPort> GrblPort<P> {
     	let mut result: Vec<u8> = Vec::new();
     	let mut byte_buffer: [u8; 8] = [0; 8];
     	let mut line_complete = false;
-
     	while !line_complete {
     		while self.output_buffer.is_empty() {
     			//read input
