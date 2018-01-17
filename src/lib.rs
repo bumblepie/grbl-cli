@@ -22,7 +22,7 @@ pub fn run() -> Result<(), serial::Error> {
     port.wakeup().expect("oh no");
     let line = port.read_line().expect("oh no");
     println!("{}", line);
-    port.write_command(&String::from("$$\r\n")).expect("oh no");
+    port.send_command(&String::from("$$")).expect("oh no");
     let lines = port.read_until_ok(2).expect("oh no");
     for line in lines.iter() {
         println!("{}", line);

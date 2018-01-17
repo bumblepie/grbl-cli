@@ -22,11 +22,22 @@ impl<P: SerialPort> GrblPort<P> {
     	self.write_command(&String::from("\r\n\r\n"))
     }
 
-    pub fn write_command(&mut self, command: &String) -> Result<(), serial::Error> {
+    fn write_command(&mut self, command: &String) -> Result<(), serial::Error> {
     	let command = command.as_bytes();
     	self.port.write(&command[..])?;
     	self.port.flush()?;
     	Ok(())
+    }
+
+    pub fn send_command(&mut self, command: &str) -> Result<(), serial::Error> {
+        //split commands by newlines
+        let lines = command.lines()
+            .filter(|cmd| !cmd.is_empty())
+            .map(|cmd| format!("{}\r\n", cmd));
+        for cmd in lines {
+            self.write_command(&cmd)?;
+        }
+        Ok(())
     }
 
     pub fn read_line(&mut self) -> Result<String, serial::Error> {
