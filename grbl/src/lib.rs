@@ -29,6 +29,17 @@ impl<P: SerialPort> GrblPort<P> {
     	Ok(())
     }
 
+    pub fn send_command(&mut self, command: &str) -> Result<(), serial::Error> {
+        //split commands by newlines
+        let lines = command.lines()
+            .filter(|cmd| !cmd.is_empty())
+            .map(|cmd| format!("{}\r\n", cmd));
+        for cmd in lines {
+            self.write_command(&cmd)?;
+        }
+        Ok(())
+    }
+
     pub fn read_line(&mut self) -> Result<String, serial::Error> {
 
     	let mut result: Vec<u8> = Vec::new();
