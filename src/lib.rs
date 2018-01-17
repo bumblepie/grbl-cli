@@ -5,8 +5,22 @@ use grbl::GrblPort;
 use std::time::Duration;
 use serial::prelude::*;
 
-pub fn run() -> Result<(), serial::Error> {
-    let mut port = serial::open("/dev/ttyUSB0").unwrap();
+pub struct GrblConfig {
+    port: String,
+}
+
+impl GrblConfig {
+    pub fn new(args: &[String]) -> GrblConfig {
+        let port = args[1].clone();
+        
+        GrblConfig {
+            port
+        }
+    }
+}
+
+pub fn run(config: GrblConfig) -> Result<(), serial::Error> {
+    let mut port = serial::open(&config.port).unwrap();
     port.reconfigure(&|settings| {
         try!(settings.set_baud_rate(serial::Baud115200));
         settings.set_char_size(serial::Bits8);
