@@ -22,7 +22,7 @@ impl<P: SerialPort> GrblPort<P> {
     	self.write_command(&String::from("\r\n\r\n"))
     }
 
-    pub fn write_command(&mut self, command: &String) -> Result<(), serial::Error> {
+    fn write_command(&mut self, command: &String) -> Result<(), serial::Error> {
     	let command = command.as_bytes();
     	self.port.write(&command[..])?;
     	self.port.flush()?;
