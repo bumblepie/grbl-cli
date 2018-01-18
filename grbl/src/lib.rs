@@ -70,7 +70,6 @@ impl<P: SerialPort> GrblPort<P> {
 
     	let result = str::from_utf8(&result).expect("oh no");
     	Ok(result.trim().to_string())
-    	// Err(serial::Error::new(serial::ErrorKind::InvalidInput,"Not yet implemented"))
     }
 
     pub fn read_until_ok(&mut self, max_oks: u8) -> Result<GrblResult, serial::Error> {
