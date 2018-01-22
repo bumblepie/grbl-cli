@@ -6,6 +6,7 @@ use std::io;
 use std::io::prelude::*;
 
 use grbl::GrblPort;
+use grbl::Error as GrblError;
 use serial::prelude::*;
 
 pub struct GrblConfig {
@@ -25,8 +26,8 @@ impl GrblConfig {
     }
 }
 
-pub fn run(config: GrblConfig) -> Result<(), serial::Error> {
-    let mut port = serial::open(&config.port).unwrap();
+pub fn run(config: GrblConfig) -> Result<(), GrblError> {
+    let mut port = serial::open(&config.port)?;
     port.reconfigure(&|settings| {
         try!(settings.set_baud_rate(serial::Baud115200));
         settings.set_char_size(serial::Bits8);
@@ -34,20 +35,19 @@ pub fn run(config: GrblConfig) -> Result<(), serial::Error> {
         settings.set_stop_bits(serial::Stop1);
         settings.set_flow_control(serial::FlowNone);
         Ok(())
-    }).expect("Could not reconfigure port");
-    port.set_timeout(Duration::from_millis(5000))
-        .expect("setting timeout failed");
+    })?;
+    port.set_timeout(Duration::from_millis(5000))?;
 
     println!("Enter GRBL commands to execute them and view GRBL's output");
     println!("Enter \"exit\" to exit the program");
 
     let mut port = GrblPort::new(port);
-    port.wakeup().expect("oh no");
+    port.wakeup()?;
 
     //read 2 lines of input given by wakeup
-    let line = port.read_line().expect("oh no");
+    let line = port.read_line()?;
     println!("{}", line);
-    let line = port.read_line().expect("oh no");
+    let line = port.read_line()?;
     println!("{}", line);
     
     let mut previous_command_succeeded = true;
@@ -60,17 +60,17 @@ pub fn run(config: GrblConfig) -> Result<(), serial::Error> {
             print!("{}", CMD_FAILED_PROMPT);
         }
         
-        io::stdout().flush().expect("oh no");
+        io::stdout().flush()?;
         let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("oh no");
+        io::stdin().read_line(&mut input)?;
 
         println!("{}", input);
         if input.trim().to_lowercase() == "exit" {
             break;
         }
 
-        port.send_command(&input).expect("oh no");
-        let result = port.read_until_ok(2).expect("oh no");
+        port.send_command(&input)?;
+        let result = port.read_until_ok(2)?;
         previous_command_succeeded = result.succeeded;
         for line in result.output.iter() {
             println!("{}", line);
