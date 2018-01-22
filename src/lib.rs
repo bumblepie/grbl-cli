@@ -64,7 +64,6 @@ pub fn run(config: GrblConfig) -> Result<(), GrblError> {
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
 
-        println!("{}", input);
         if input.trim().to_lowercase() == "exit" {
             break;
         }
