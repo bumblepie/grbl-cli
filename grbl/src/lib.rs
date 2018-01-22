@@ -1,17 +1,18 @@
 extern crate serial;
 
+use std::fmt;
 use std::str;
 use std::collections::VecDeque;
+
+use std::str::Utf8Error as Utf8Error;
+use std::io::Error as IOError;
+use std::error::Error as StdError;
+
 use serial::prelude::*;
 
 pub struct GrblPort<P: SerialPort> {
 	port: P,
 	output_buffer: VecDeque<u8>,
-}
-
-pub struct GrblResult {
-    pub output: Vec<String>,
-    pub succeeded: bool,
 }
 
 impl<P: SerialPort> GrblPort<P> {
@@ -22,18 +23,18 @@ impl<P: SerialPort> GrblPort<P> {
         }
     }
 
-    pub fn wakeup(&mut self) -> Result<(), serial::Error> {
+    pub fn wakeup(&mut self) -> Result<(), Error> {
     	self.write_command(&String::from("\r\n\r\n"))
     }
 
-    fn write_command(&mut self, command: &String) -> Result<(), serial::Error> {
+    fn write_command(&mut self, command: &String) -> Result<(), Error> {
     	let command = command.as_bytes();
     	self.port.write(&command[..])?;
     	self.port.flush()?;
     	Ok(())
     }
 
-    pub fn send_command(&mut self, command: &str) -> Result<(), serial::Error> {
+    pub fn send_command(&mut self, command: &str) -> Result<(), Error> {
         //split commands by newlines
         let lines = command.lines()
             .filter(|cmd| !cmd.is_empty())
@@ -44,7 +45,7 @@ impl<P: SerialPort> GrblPort<P> {
         Ok(())
     }
 
-    pub fn read_line(&mut self) -> Result<String, serial::Error> {
+    pub fn read_line(&mut self) -> Result<String, Error> {
 
     	let mut result: Vec<u8> = Vec::new();
     	let mut byte_buffer: [u8; 8] = [0; 8];
@@ -68,12 +69,11 @@ impl<P: SerialPort> GrblPort<P> {
     		}
     	}
 
-    	let result = str::from_utf8(&result).expect("oh no");
+    	let result = str::from_utf8(&result)?;
     	Ok(result.trim().to_string())
-    	// Err(serial::Error::new(serial::ErrorKind::InvalidInput,"Not yet implemented"))
     }
 
-    pub fn read_until_ok(&mut self, max_oks: u8) -> Result<GrblResult, serial::Error> {
+    pub fn read_until_ok(&mut self, max_oks: u8) -> Result<GrblResult, Error> {
     	let mut output = Vec::new();
     	let mut num_oks = 0;
         let mut succeeded = true;
@@ -94,6 +94,37 @@ impl<P: SerialPort> GrblPort<P> {
         })
     }
 }
+
+pub struct GrblResult {
+    pub output: Vec<String>,
+    pub succeeded: bool,
+}
+
+#[derive(Debug)]
+pub enum Error {
+    SerialError(serial::Error),
+    IOError(IOError),
+    Utf8Error(Utf8Error),
+}
+
+impl From<serial::Error> for Error {
+    fn from(serial_error: serial::Error) -> Error {
+        Error::SerialError(serial_error)
+    }
+}
+
+impl From<IOError> for Error {
+    fn from(io_error: IOError) -> Error {
+        Error::IOError(io_error)
+    }
+}
+
+impl From<Utf8Error> for Error {
+    fn from(utf8_error: Utf8Error) -> Error {
+        Error::Utf8Error(utf8_error)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
