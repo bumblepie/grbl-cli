@@ -12,10 +12,16 @@ fn main() {
     		grbl::Error::SerialError(err) => {
     			match err.kind() {
     				serial::ErrorKind::NoDevice => eprintln!("Device not found"),
-    				_ => panic!(err),
+    				_ => {
+    					eprintln!("{:?}", err);
+    					panic!(err)
+    				},
     			}
     		},
-    		_ => panic!(err),
+    		_ => {
+    			eprintln!("{:?}", err);
+    			panic!(err);
+    		},
     	}
     	std::process::exit(1)
     };
