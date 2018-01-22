@@ -11,17 +11,21 @@ use serial::prelude::*;
 
 pub struct GrblConfig {
     port: String,
+    timeout: Duration,
 }
 
 const CMD_SUCCEEDED_PROMPT: &'static str = ">>";
 const CMD_FAILED_PROMPT: &'static str = "!>>";
+const DEFAULT_TIMEOUT: u64 = 5000;
 
 impl GrblConfig {
     pub fn new(args: &[String]) -> GrblConfig {
         let port = args[1].clone();
+        let timeout = Duration::from_millis(DEFAULT_TIMEOUT);
 
         GrblConfig {
-            port
+            port,
+            timeout,
         }
     }
 }
@@ -36,7 +40,7 @@ pub fn run(config: GrblConfig) -> Result<(), GrblError> {
         settings.set_flow_control(serial::FlowNone);
         Ok(())
     })?;
-    port.set_timeout(Duration::from_millis(5000))?;
+    port.set_timeout(config.timeout)?;
 
     println!("Enter GRBL commands to execute them and view GRBL's output");
     println!("Enter \"exit\" to exit the program");
