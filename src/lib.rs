@@ -10,25 +10,12 @@ use grbl::Error as GrblError;
 use serial::prelude::*;
 
 pub struct GrblConfig {
-    port: String,
-    timeout: Duration,
+    pub port: String,
+    pub timeout: Duration,
 }
 
 const CMD_SUCCEEDED_PROMPT: &'static str = ">>";
 const CMD_FAILED_PROMPT: &'static str = "!>>";
-const DEFAULT_TIMEOUT: u64 = 5000;
-
-impl GrblConfig {
-    pub fn new(args: &[String]) -> GrblConfig {
-        let port = args[1].clone();
-        let timeout = Duration::from_millis(DEFAULT_TIMEOUT);
-
-        GrblConfig {
-            port,
-            timeout,
-        }
-    }
-}
 
 pub fn run(config: GrblConfig) -> Result<(), GrblError> {
     let mut port = serial::open(&config.port)?;

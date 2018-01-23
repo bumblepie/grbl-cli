@@ -1,0 +1,15 @@
+name: grbl-cli
+version: "1.0"
+author: Bumblepie <luke@bumblepie.space>
+about: Does awesome things
+args:
+    - PORT:
+        help: Sets the serial port of the grbl device to use
+        required: true
+        index: 1
+    - timeout:
+        short: t
+        long: timeout
+        value_name: TIMEOUT
+        help: Sets the timeout when talking to the serial port
+        takes_value: true
